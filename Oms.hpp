@@ -49,8 +49,10 @@
 #include <cstdint>
 #include <limits>
 #include <map>
+#include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 #include <format>
 #include <charconv>
 #include <cstring>
@@ -192,13 +194,15 @@ namespace oms {
 		 * @throws std::bad_cast if the concrete type does not support this conversion.
 		 */
 		virtual operator std::string() const { throw std::bad_cast(); }
-		// size_t is an alias for uint32_t or uint64_t depending on platform; routing
-		// through the appropriately-sized virtual avoids a duplicate-override error on
-		// LP64 Linux where size_t and uint64_t are the same underlying type.
-		operator size_t() const {
-			using Equiv = std::conditional_t<sizeof(size_t) == 8, std::uint64_t, std::uint32_t>;
-			return static_cast<size_t>(static_cast<Equiv>(*this));
-		}
+		// On LP64 Linux and LLP64 Windows, size_t and uint64_t are the same underlying
+		// type (both unsigned long or both unsigned long long), so declaring both here
+		// would be a duplicate and GCC rejects it. On Apple platforms (macOS/iOS),
+		// uint64_t is unsigned long long while size_t is unsigned long — genuinely
+		// distinct types that both need an operator. Same applies to 32-bit platforms
+		// where size_t is 32-bit but uint64_t is still 64-bit.
+#if defined(__APPLE__) || (defined(__SIZEOF_SIZE_T__) && __SIZEOF_SIZE_T__ < 8)
+		virtual operator size_t() const { throw std::bad_cast(); }
+#endif
 		virtual operator char() const { throw std::bad_cast(); }
 		virtual operator std::uint8_t() const { throw std::bad_cast(); }
 		virtual operator std::uint16_t() const { throw std::bad_cast(); }
@@ -358,6 +362,9 @@ namespace oms {
 		operator std::uint16_t() const override { return value; }
 		operator std::uint32_t() const override { return value; }
 		operator std::uint64_t() const override { return value; }
+#if defined(__APPLE__) || (defined(__SIZEOF_SIZE_T__) && __SIZEOF_SIZE_T__ < 8)
+		operator size_t() const override { return value; }
+#endif
 		operator std::int8_t() const override { return value; }
 		operator std::int16_t() const override { return value; }
 		operator std::int32_t() const override { return value; }
