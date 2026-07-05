@@ -1,0 +1,12 @@
+build/
+build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+.cmake/
+Oms-test
+odump
+.DS_Store
+.vscode/
+.idea/
