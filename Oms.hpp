@@ -46,6 +46,8 @@
 
 #include <algorithm>
 #include <bit>
+#include <cstdint>
+#include <limits>
 #include <map>
 #include <optional>
 #include <string>
