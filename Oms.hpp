@@ -192,7 +192,13 @@ namespace oms {
 		 * @throws std::bad_cast if the concrete type does not support this conversion.
 		 */
 		virtual operator std::string() const { throw std::bad_cast(); }
-		virtual operator size_t() const { throw std::bad_cast(); }
+		// size_t is an alias for uint32_t or uint64_t depending on platform; routing
+		// through the appropriately-sized virtual avoids a duplicate-override error on
+		// LP64 Linux where size_t and uint64_t are the same underlying type.
+		operator size_t() const {
+			using Equiv = std::conditional_t<sizeof(size_t) == 8, std::uint64_t, std::uint32_t>;
+			return static_cast<size_t>(static_cast<Equiv>(*this));
+		}
 		virtual operator char() const { throw std::bad_cast(); }
 		virtual operator std::uint8_t() const { throw std::bad_cast(); }
 		virtual operator std::uint16_t() const { throw std::bad_cast(); }
@@ -347,7 +353,6 @@ namespace oms {
 			return value == (T)variant;
 		}
 
-		operator size_t() const override { return value; }
 		operator char() const override { return value; }
 		operator std::uint8_t() const override { return value; }
 		operator std::uint16_t() const override { return value; }
