@@ -42,7 +42,7 @@ std::cout << oms::toString(s) << '\n';
 |------|---------|
 | `Oms.hpp` | Core library: all types, serialization |
 | `OmsString.hpp` | Human-readable dump formatting (`toString()`) |
-| `OmsDump.cpp` | `odump` CLI — prints any `.oms` file to stdout |
+| `OmsDump.cpp` | `omsdump` CLI — prints any `.oms` file to stdout |
 
 ## API
 
@@ -178,11 +178,12 @@ std::cout << oms::toString(section);
 Produces an indented, JSON-like string. Keys are sorted alphabetically. Nested structures
 and arrays are expanded recursively. Blobs appear as `(blob)`.
 
-### `odump` utility
+### `omsdump` utility
 
 ```sh
-odump data.oms                  # dump all sections
-odump data.oms config           # dump only the section named "config"
+omsdump data.oms                # dump all sections
+omsdump data.oms config         # dump only the section named "config"
+omsdump --list data.oms         # list section names and byte counts
 ```
 
 ## Wire format

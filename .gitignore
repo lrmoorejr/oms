@@ -6,7 +6,7 @@ cmake_install.cmake
 CTestTestfile.cmake
 .cmake/
 Oms-test
-odump
+omsdump
 .DS_Store
 .vscode/
 .idea/

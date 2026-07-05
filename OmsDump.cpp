@@ -18,21 +18,43 @@
 #include "OmsString.hpp"
 
 int main(int argc, char** argv) {
-	if(argc < 2 || argc > 3) {
-		std::cerr << "Usage: odump <file> [section-name]\n";
+	bool listMode = argc >= 2 && std::string(argv[1]) == "--list";
+	int fileArg = listMode ? 2 : 1;
+
+	bool validArgs = (fileArg < argc) &&
+	                 (listMode  ? argc == fileArg + 1 :
+	                              argc <= fileArg + 2);
+	if(!validArgs) {
+		std::cerr << "Usage: omsdump [--list] <file> [section-name]\n";
 		return 1;
 	}
 
-	const char* path = argv[1];
+	const char* path = argv[fileArg];
 	std::ifstream infile(path, std::ifstream::binary);
 	if(!infile) {
 		std::cerr << "Cannot open " << path << '\n';
 		return 1;
 	}
 
-	if(argc == 3) {
+	if(listMode) {
+		// Print the name (and byte count when available) of each section.
+		int sectionIndex = 0;
+		while(true) {
+			oms::Section section;
+			infile >> section;
+			if(infile.eof()) break;
+			if(!infile) {
+				std::cerr << "Error reading " << path << '\n';
+				return 1;
+			}
+			std::cout << sectionIndex++ << ": " << section.name;
+			if(section.sectionSize())
+				std::cout << " (" << section.sectionSize() << " bytes)";
+			std::cout << '\n';
+		}
+	} else if(argc == fileArg + 2) {
 		// Find and dump a single named section.
-		const std::string targetName = argv[2];
+		const std::string targetName = argv[fileArg + 1];
 		auto result = oms::Section::findNext(infile, targetName);
 		if(!result) {
 			std::cerr << "Section \"" << targetName << "\" not found in " << path << '\n';

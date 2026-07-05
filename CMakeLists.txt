@@ -32,7 +32,7 @@ find_package(Catch2 3 REQUIRED)
 add_executable(Oms-test Oms-test.cpp Oms.hpp OmsString.hpp)
 target_link_libraries(Oms-test PRIVATE Catch2::Catch2WithMain)
 
-add_executable(odump OmsDump.cpp Oms.hpp OmsString.hpp)
+add_executable(omsdump OmsDump.cpp Oms.hpp OmsString.hpp)
 
 enable_testing()
 include(Catch)
