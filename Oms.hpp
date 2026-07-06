@@ -263,7 +263,16 @@ namespace oms {
 		template<class T>
 		requires (!std::is_base_of_v<Variant, T>)
 		bool operator==(const T& value) const {
-			return value == static_cast<T>(*this);
+			// Route 64-bit integers through the explicit stdint virtual to avoid
+			// ambiguity on LP64 Linux where long long and int64_t (= long) are distinct
+			// types and there is no operator long long() in the virtual interface.
+			if constexpr (std::is_integral_v<T> && sizeof(T) == 8) {
+				if constexpr (std::is_signed_v<T>)
+					return value == static_cast<T>(static_cast<std::int64_t>(*this));
+				else
+					return value == static_cast<T>(static_cast<std::uint64_t>(*this));
+			} else
+				return value == static_cast<T>(*this);
 		}
 
 		/** @brief Deep equality: same DataType and same value. */
@@ -354,7 +363,14 @@ namespace oms {
 			return new Primitive(value);
 		}
 		bool equals(const Variant& variant) const override {
-			return value == (T)variant;
+			// Same LP64 long long / int64_t disambiguation as operator==.
+			if constexpr (std::is_integral_v<T> && sizeof(T) == 8) {
+				if constexpr (std::is_signed_v<T>)
+					return static_cast<std::int64_t>(value) == static_cast<std::int64_t>(variant);
+				else
+					return static_cast<std::uint64_t>(value) == static_cast<std::uint64_t>(variant);
+			} else
+				return value == (T)variant;
 		}
 
 		operator char() const override { return value; }
@@ -398,10 +414,10 @@ namespace oms {
 			else if constexpr (std::is_same_v<T, std::uint8_t>) return DataType::uint8;
 			else if constexpr (std::is_same_v<T, std::uint16_t>) return DataType::uint16;
 			else if constexpr (std::is_same_v<T, std::uint32_t>) return DataType::uint32;
-			else if constexpr (std::is_same_v<T, std::uint64_t> || std::is_same_v<T, size_t>) return DataType::uint64;
+			else if constexpr (std::is_same_v<T, std::uint64_t> || std::is_same_v<T, size_t> || std::is_same_v<T, unsigned long long>) return DataType::uint64;
 			else if constexpr (std::is_same_v<T, std::int16_t>) return DataType::int16;
 			else if constexpr (std::is_same_v<T, std::int32_t>) return DataType::int32;
-			else if constexpr (std::is_same_v<T, std::int64_t>) return DataType::int64;
+			else if constexpr (std::is_same_v<T, std::int64_t> || std::is_same_v<T, long long>) return DataType::int64;
 			else if constexpr (std::is_same_v<T, float>) return DataType::float4;
 			else if constexpr (std::is_same_v<T, double>) return DataType::float8;
 			else if constexpr (std::is_same_v<T, bool>) return DataType::boolean;
@@ -604,10 +620,10 @@ namespace oms {
 			else if constexpr (std::is_same_v<T, std::uint8_t>) return DataType::uint8v;
 			else if constexpr (std::is_same_v<T, std::uint16_t>) return DataType::uint16v;
 			else if constexpr (std::is_same_v<T, std::uint32_t>) return DataType::uint32v;
-			else if constexpr (std::is_same_v<T, std::uint64_t> || std::is_same_v<T, size_t>) return DataType::uint64v;
+			else if constexpr (std::is_same_v<T, std::uint64_t> || std::is_same_v<T, size_t> || std::is_same_v<T, unsigned long long>) return DataType::uint64v;
 			else if constexpr (std::is_same_v<T, std::int16_t>) return DataType::int16v;
 			else if constexpr (std::is_same_v<T, std::int32_t>) return DataType::int32v;
-			else if constexpr (std::is_same_v<T, std::int64_t>) return DataType::int64v;
+			else if constexpr (std::is_same_v<T, std::int64_t> || std::is_same_v<T, long long>) return DataType::int64v;
 			else if constexpr (std::is_same_v<T, float>) return DataType::float4v;
 			else if constexpr (std::is_same_v<T, double>) return DataType::float8v;
 			else return DataType::unsupported;
@@ -1281,7 +1297,7 @@ namespace oms {
 		};
 
 		/** @brief Clears all members and resets the name to an empty string. */
-		constexpr void clear() noexcept {
+		void clear() noexcept {
 			Structure::clear();
 			name.clear();
 		}
