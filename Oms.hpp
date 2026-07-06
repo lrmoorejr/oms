@@ -469,7 +469,7 @@ namespace oms {
 			throw_if<std::ios_base::failure>(dataSize == 0, "Oms: Invalid string length");
 			value.resize(dataSize);
 			istream.read(value.data(), dataSize);
-			ensure(value[dataSize - 1] == 0);
+			throw_if<std::ios_base::failure>(value[dataSize - 1] != 0, "Oms: String data missing null terminator");
 			value.resize(dataSize - 1);
 		}
 
