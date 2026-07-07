@@ -1,0 +1,30 @@
+# Minimal Doxygen config for Oms.hpp OmsString.hpp. Undocumented settings fall back to
+# Doxygen's built-in defaults -- see https://www.doxygen.nl/manual/config.html.
+
+PROJECT_NAME           = "OMS"
+PROJECT_BRIEF           = "One More Serializer -- a single-header C++20 binary serialization library"
+
+OUTPUT_DIRECTORY       = docs
+INPUT                  = Oms.hpp OmsString.hpp README.md
+USE_MDFILE_AS_MAINPAGE = README.md
+
+RECURSIVE              = NO
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = NO
+JAVADOC_AUTOBRIEF      = YES
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+GENERATE_TREEVIEW      = YES
+DISABLE_INDEX          = NO
+FULL_PATH_NAMES        = NO
+SOURCE_BROWSER         = NO
+
+GENERATE_LATEX         = NO
+GENERATE_XML           = NO
+GENERATE_MAN           = NO
+GENERATE_RTF           = NO
+
+QUIET                  = NO
+WARN_IF_UNDOCUMENTED   = NO
