@@ -48,7 +48,7 @@ std::cout << oms::toString(s) << '\n';
 
 ## API
 
-### `oms::Section` — the top-level streaming unit
+### oms::Section — the top-level streaming unit
 
 ```cpp
 oms::Section section;
@@ -84,7 +84,7 @@ if(auto result = oms::Section::findNext(in, "config"))
     process(*result);
 ```
 
-### `oms::Structure` — key-value container
+### oms::Structure — key-value container
 
 Members are stored in insertion order. All `add*` methods overwrite an existing member;
 `getOrAdd*` methods leave an existing member untouched.
@@ -117,12 +117,12 @@ Members are stored in insertion order. All `add*` methods overwrite an existing 
 | `getOrAddVector<T>(key)` | Insert-if-absent typed Vector |
 | `clear()` | Removes all members |
 
-#### `index` member
+#### index member
 
 `const std::optional<std::size_t> index` — set automatically when a `Structure` is an
 element of an `Array`; `std::nullopt` otherwise.
 
-### `oms::Array` — ordered sequence of Structures
+### oms::Array — ordered sequence of Structures
 
 ```cpp
 Array& arr = section.addArray("results");
@@ -136,7 +136,7 @@ row.add("score", 0.95);
 | `operator[](i)` | Indexed element access |
 | `size()` / `empty()` | Element count |
 
-### `oms::Variant` — base type for all values
+### oms::Variant — base type for all values
 
 All members of `Structure` and `Array` are `Variant` references. Cast with the implicit
 conversion operators:
@@ -170,7 +170,7 @@ std::uint32_t n = section["version"];
 | `structure` | `Structure` |
 | `array` | `Array` |
 
-### `oms::toString()` (OmsString.hpp)
+### oms::toString() (OmsString.hpp)
 
 ```cpp
 #include "OmsString.hpp"
@@ -180,7 +180,7 @@ std::cout << oms::toString(section);
 Produces an indented, JSON-like string. Keys are sorted alphabetically. Nested structures
 and arrays are expanded recursively. Blobs appear as `(blob)`.
 
-### `omsdump` utility
+### omsdump utility
 
 ```sh
 omsdump data.oms                # dump all sections
