@@ -214,6 +214,7 @@ void randomlyPopulateStructure(oms::Structure& structure, int oddsOfArray) {
 			break;
 		case oms::DataType::boolean:
 			structure.add(std::format("{}", identifierIndex++), std::uniform_int_distribution<int>(0, 1)(generator) == 0);
+			break;
 
 		case oms::DataType::uint8v:
 			structure.addVector<std::uint8_t>(std::format("{}", identifierIndex++), randomVector<std::uint8_t>());

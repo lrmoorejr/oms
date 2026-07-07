@@ -388,6 +388,10 @@ namespace oms {
 		operator float() const override { return value; }
 		operator double() const override { return value; }
 		operator bool() const override { return value; }
+		// Overriding some of Variant's conversion operators without this one would hide
+		// Variant::operator void*() from unqualified lookup on a Primitive<T> (a scalar has
+		// no buffer to expose) -- redeclare it to inherit the same throwing behavior explicitly.
+		operator void*() const override { throw std::bad_cast(); }
 
 		size_t size() const override {
 			return sizeof(T);
@@ -573,6 +577,11 @@ namespace oms {
 
 		/** @brief Pointer to the internal element buffer (valid for the lifetime of this object). */
 		operator void*() const override { return data.get(); }
+
+		// Otherwise these would hide Variant's key-based operator[](const std::string&)/
+		// operator[](const char*) overloads from unqualified lookup on a Vector<T> -- they're
+		// unrelated overloads (index-based, not key-based), not overrides of them.
+		using Variant::operator[];
 
 		/** @brief Indexed element access (no bounds checking). */
 	    T& operator[](std::size_t index) {
@@ -1024,10 +1033,9 @@ namespace oms {
 
 		static std::string readIdentifier(std::istream& istream) {
 			std::uint8_t identifierSize = readBinary<std::uint8_t>(istream);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wvla-cxx-extension"
-			char buffer[identifierSize + 1];
-#pragma clang diagnostic pop
+			// Fixed at the max size a uint8_t length prefix can ever specify (rather than a
+			// variable-length array sized to identifierSize+1), so this is portable ISO C++.
+			char buffer[std::numeric_limits<std::uint8_t>::max() + 1];
 
 			istream.read(buffer, identifierSize + 1);
 			return std::string(buffer);
@@ -1130,6 +1138,11 @@ namespace oms {
 		constexpr size_t size() const override {
 			return members.size();
 		}
+
+		// Otherwise this would hide Variant's key-based operator[](const std::string&)/
+		// operator[](const char*) overloads from unqualified lookup on an Array -- they're
+		// unrelated overloads (index-based, not key-based), not overrides of them.
+		using Variant::operator[];
 
 		/** @brief Indexed element access (no bounds checking). */
 	    Structure& operator[](std::size_t index) {
