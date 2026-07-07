@@ -160,7 +160,6 @@ void randomlyPopulateStructure(oms::Structure& structure, int oddsOfArray) {
 
 	std::vector<std::uint8_t> blobHolder;
 
-	oms::Structure* child;
 	for(auto memberIndex = 0; memberIndex < memberCount; ++memberIndex) {
 		const oms::DataType type = static_cast<oms::DataType>(typeDistribution(generator));
 		switch(type) {
