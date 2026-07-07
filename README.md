@@ -198,4 +198,4 @@ breaks older readers.
 
 ## License
 
-Apache 2.0 — see [LICENSE](LICENSE).
+Apache 2.0 — see [LICENSE](https://github.com/lrmoorejr/oms/blob/main/LICENSE).
