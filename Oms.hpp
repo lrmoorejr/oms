@@ -457,25 +457,27 @@ namespace oms {
 		operator std::string() const override {
 			return value;
 		};
-		// Otherwise this would hide Variant's other conversion operators from unqualified
-		// lookup on a String -- a string genuinely doesn't support them, so just inherit the
-		// same throwing behavior explicitly.
+		// Otherwise these would hide Variant's other conversion operators from unqualified
+		// lookup on a String -- a string genuinely doesn't support them, so redeclare them
+		// explicitly with the same throwing behavior (matching Primitive<T>'s style below,
+		// rather than a `using Variant::operator T;` per operator -- some GCC versions don't
+		// reliably treat those as un-hiding a virtual conversion operator).
 #if defined(__APPLE__) || (defined(__SIZEOF_SIZE_T__) && __SIZEOF_SIZE_T__ < 8)
-		using Variant::operator size_t;
+		operator size_t() const override { throw std::bad_cast(); }
 #endif
-		using Variant::operator char;
-		using Variant::operator std::uint8_t;
-		using Variant::operator std::uint16_t;
-		using Variant::operator std::uint32_t;
-		using Variant::operator std::uint64_t;
-		using Variant::operator std::int8_t;
-		using Variant::operator std::int16_t;
-		using Variant::operator std::int32_t;
-		using Variant::operator std::int64_t;
-		using Variant::operator float;
-		using Variant::operator double;
-		using Variant::operator bool;
-		using Variant::operator void*;
+		operator char() const override { throw std::bad_cast(); }
+		operator std::uint8_t() const override { throw std::bad_cast(); }
+		operator std::uint16_t() const override { throw std::bad_cast(); }
+		operator std::uint32_t() const override { throw std::bad_cast(); }
+		operator std::uint64_t() const override { throw std::bad_cast(); }
+		operator std::int8_t() const override { throw std::bad_cast(); }
+		operator std::int16_t() const override { throw std::bad_cast(); }
+		operator std::int32_t() const override { throw std::bad_cast(); }
+		operator std::int64_t() const override { throw std::bad_cast(); }
+		operator float() const override { throw std::bad_cast(); }
+		operator double() const override { throw std::bad_cast(); }
+		operator bool() const override { throw std::bad_cast(); }
+		operator void*() const override { throw std::bad_cast(); }
 
 		/** @brief Number of characters in the string (excluding null terminator). */
 		size_t size() const override {
@@ -535,25 +537,27 @@ namespace oms {
 
 		/** @brief Pointer to the internal data buffer (valid for the lifetime of this object). */
 		operator void*() const override { return data.get(); }
-		// Otherwise this would hide Variant's other conversion operators from unqualified
-		// lookup on a Blob -- a byte buffer genuinely doesn't support them, so just inherit
-		// the same throwing behavior explicitly.
-		using Variant::operator std::string;
+		// Otherwise these would hide Variant's other conversion operators from unqualified
+		// lookup on a Blob -- a byte buffer genuinely doesn't support them, so redeclare them
+		// explicitly with the same throwing behavior (matching Primitive<T>'s style below,
+		// rather than a `using Variant::operator T;` per operator -- some GCC versions don't
+		// reliably treat those as un-hiding a virtual conversion operator).
+		operator std::string() const override { throw std::bad_cast(); }
 #if defined(__APPLE__) || (defined(__SIZEOF_SIZE_T__) && __SIZEOF_SIZE_T__ < 8)
-		using Variant::operator size_t;
+		operator size_t() const override { throw std::bad_cast(); }
 #endif
-		using Variant::operator char;
-		using Variant::operator std::uint8_t;
-		using Variant::operator std::uint16_t;
-		using Variant::operator std::uint32_t;
-		using Variant::operator std::uint64_t;
-		using Variant::operator std::int8_t;
-		using Variant::operator std::int16_t;
-		using Variant::operator std::int32_t;
-		using Variant::operator std::int64_t;
-		using Variant::operator float;
-		using Variant::operator double;
-		using Variant::operator bool;
+		operator char() const override { throw std::bad_cast(); }
+		operator std::uint8_t() const override { throw std::bad_cast(); }
+		operator std::uint16_t() const override { throw std::bad_cast(); }
+		operator std::uint32_t() const override { throw std::bad_cast(); }
+		operator std::uint64_t() const override { throw std::bad_cast(); }
+		operator std::int8_t() const override { throw std::bad_cast(); }
+		operator std::int16_t() const override { throw std::bad_cast(); }
+		operator std::int32_t() const override { throw std::bad_cast(); }
+		operator std::int64_t() const override { throw std::bad_cast(); }
+		operator float() const override { throw std::bad_cast(); }
+		operator double() const override { throw std::bad_cast(); }
+		operator bool() const override { throw std::bad_cast(); }
 
 		void write(std::ostream& ostream) override {
 			writeBinary(ostream, dataSize);
@@ -615,25 +619,27 @@ namespace oms {
 
 		/** @brief Pointer to the internal element buffer (valid for the lifetime of this object). */
 		operator void*() const override { return data.get(); }
-		// Otherwise this would hide Variant's other conversion operators from unqualified
-		// lookup on a Vector<T> -- a Vector genuinely doesn't support them, so just inherit
-		// the same throwing behavior explicitly.
-		using Variant::operator std::string;
+		// Otherwise these would hide Variant's other conversion operators from unqualified
+		// lookup on a Vector<T> -- a Vector genuinely doesn't support them, so redeclare them
+		// explicitly with the same throwing behavior (matching Primitive<T>'s style below,
+		// rather than a `using Variant::operator T;` per operator -- some GCC versions don't
+		// reliably treat those as un-hiding a virtual conversion operator).
+		operator std::string() const override { throw std::bad_cast(); }
 #if defined(__APPLE__) || (defined(__SIZEOF_SIZE_T__) && __SIZEOF_SIZE_T__ < 8)
-		using Variant::operator size_t;
+		operator size_t() const override { throw std::bad_cast(); }
 #endif
-		using Variant::operator char;
-		using Variant::operator std::uint8_t;
-		using Variant::operator std::uint16_t;
-		using Variant::operator std::uint32_t;
-		using Variant::operator std::uint64_t;
-		using Variant::operator std::int8_t;
-		using Variant::operator std::int16_t;
-		using Variant::operator std::int32_t;
-		using Variant::operator std::int64_t;
-		using Variant::operator float;
-		using Variant::operator double;
-		using Variant::operator bool;
+		operator char() const override { throw std::bad_cast(); }
+		operator std::uint8_t() const override { throw std::bad_cast(); }
+		operator std::uint16_t() const override { throw std::bad_cast(); }
+		operator std::uint32_t() const override { throw std::bad_cast(); }
+		operator std::uint64_t() const override { throw std::bad_cast(); }
+		operator std::int8_t() const override { throw std::bad_cast(); }
+		operator std::int16_t() const override { throw std::bad_cast(); }
+		operator std::int32_t() const override { throw std::bad_cast(); }
+		operator std::int64_t() const override { throw std::bad_cast(); }
+		operator float() const override { throw std::bad_cast(); }
+		operator double() const override { throw std::bad_cast(); }
+		operator bool() const override { throw std::bad_cast(); }
 
 		// Otherwise these would hide Variant's key-based operator[](const std::string&)/
 		// operator[](const char*) overloads from unqualified lookup on a Vector<T> -- they're
