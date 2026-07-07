@@ -1,5 +1,7 @@
 # oms
 
+[API docs](https://lrmoorejr.github.io/oms/)
+
 **One More Serializer** — a single-header C++20 binary serialization library.
 
 OMS stores typed data in a hierarchical key-value model and serializes it to a compact
