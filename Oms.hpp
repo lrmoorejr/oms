@@ -1371,6 +1371,25 @@ namespace oms {
 		operator std::string() const override {
 			return std::format("Section ({})", name);
 		};
+		// Otherwise these would hide Variant's other conversion operators from unqualified
+		// lookup on a Section -- a Section genuinely doesn't support them, so redeclare them
+		// explicitly with the same throwing behavior (matching Primitive<T>'s style above).
+#if defined(__APPLE__) || (defined(__SIZEOF_SIZE_T__) && __SIZEOF_SIZE_T__ < 8)
+		operator size_t() const override { throw std::bad_cast(); }
+#endif
+		operator char() const override { throw std::bad_cast(); }
+		operator std::uint8_t() const override { throw std::bad_cast(); }
+		operator std::uint16_t() const override { throw std::bad_cast(); }
+		operator std::uint32_t() const override { throw std::bad_cast(); }
+		operator std::uint64_t() const override { throw std::bad_cast(); }
+		operator std::int8_t() const override { throw std::bad_cast(); }
+		operator std::int16_t() const override { throw std::bad_cast(); }
+		operator std::int32_t() const override { throw std::bad_cast(); }
+		operator std::int64_t() const override { throw std::bad_cast(); }
+		operator float() const override { throw std::bad_cast(); }
+		operator double() const override { throw std::bad_cast(); }
+		operator bool() const override { throw std::bad_cast(); }
+		operator void*() const override { throw std::bad_cast(); }
 
 		/** @brief Clears all members and resets the name to an empty string. */
 		void clear() noexcept {
