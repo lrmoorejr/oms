@@ -654,6 +654,17 @@ namespace oms {
 	    const T& operator[](std::size_t index) const {
 			return data[index];
 		}
+		// A literal 0 is simultaneously a valid int-to-size_t conversion and a null-pointer
+		// constant, so `v[0]` is otherwise ambiguous between operator[](size_t) above and the
+		// inherited operator[](const char*) -- only on a const Vector, where both candidates
+		// are equally const-qualified. These int overloads are exact matches for such literals
+		// and win overload resolution outright, resolving the ambiguity.
+		T& operator[](int index) {
+			return operator[](static_cast<std::size_t>(index));
+		}
+		const T& operator[](int index) const {
+			return operator[](static_cast<std::size_t>(index));
+		}
 
 		/** @brief Iterator to the first element. */
 		constexpr T* begin() {
@@ -1214,6 +1225,17 @@ namespace oms {
 		/** @brief Indexed element access (no bounds checking). */
 	    const Structure& operator[](std::size_t index) const {
 			return *members[index];
+		}
+		// A literal 0 is simultaneously a valid int-to-size_t conversion and a null-pointer
+		// constant, so `a[0]` is otherwise ambiguous between operator[](size_t) above and the
+		// inherited operator[](const char*) -- only on a const Array, where both candidates
+		// are equally const-qualified. These int overloads are exact matches for such literals
+		// and win overload resolution outright, resolving the ambiguity.
+		Structure& operator[](int index) {
+			return operator[](static_cast<std::size_t>(index));
+		}
+		const Structure& operator[](int index) const {
+			return operator[](static_cast<std::size_t>(index));
 		}
 
 		/**

@@ -53,6 +53,12 @@ TEST_CASE("Vector") {
 		CHECK(v[i] == i + 1);
 	}
 
+	// Regression: a literal 0 index used to be ambiguous on a const Vector between
+	// operator[](size_t) and the inherited key-based operator[](const char*), since a
+	// literal 0 is both an integral conversion target and a null-pointer constant.
+	const oms::Vector<int>& cv = v;
+	CHECK(cv[0] == 1);
+
 	// std::cout << toString(root) << std::endl;
 }
 
@@ -69,6 +75,11 @@ TEST_CASE("Array") {
 		int x = reinterpret_cast<const oms::Array&>((*s)["array"])[i]["x"];
 		CHECK(x == i);
 	}
+
+	// Regression: same literal-0 ambiguity as the Vector test above, for Array.
+	const oms::Array& carray = array;
+	int x = carray[0]["x"];
+	CHECK(x == 0);
 }
 
 TEST_CASE("Simple Serialize / Deserialize") {
