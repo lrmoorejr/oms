@@ -59,6 +59,13 @@ TEST_CASE("Vector") {
 	const oms::Vector<int>& cv = v;
 	CHECK(cv[0] == 1);
 
+	// Regression: any non-size_t, non-int integral index type (e.g. unsigned int) was
+	// ambiguous too, once a fixed operator[](int) was added to fix the literal-0 case above --
+	// it then tied with operator[](size_t) instead. Covers every integral index type via one
+	// constrained template rather than a fixed type.
+	unsigned int ui = 1;
+	CHECK(cv[ui] == 2);
+
 	// std::cout << toString(root) << std::endl;
 }
 

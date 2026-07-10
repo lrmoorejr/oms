@@ -46,6 +46,7 @@
 
 #include <algorithm>
 #include <bit>
+#include <concepts>
 #include <cstdint>
 #include <limits>
 #include <map>
@@ -654,15 +655,22 @@ namespace oms {
 	    const T& operator[](std::size_t index) const {
 			return data[index];
 		}
-		// A literal 0 is simultaneously a valid int-to-size_t conversion and a null-pointer
-		// constant, so `v[0]` is otherwise ambiguous between operator[](size_t) above and the
-		// inherited operator[](const char*) -- only on a const Vector, where both candidates
-		// are equally const-qualified. These int overloads are exact matches for such literals
-		// and win overload resolution outright, resolving the ambiguity.
-		T& operator[](int index) {
+		// An integral index that isn't already exactly std::size_t (e.g. a literal 0, an int, an
+		// unsigned int) is otherwise ambiguous between operator[](size_t) above and the inherited
+		// operator[](const char*) -- only on a const Vector, where both candidates are equally
+		// const-qualified and the conversion to either size_t or const char* (for a literal 0,
+		// which is also a null-pointer constant) ranks equally as a "Conversion". A single fixed
+		// overload (e.g. operator[](int)) would only fix that one type and reintroduce the same
+		// ambiguity for every other integral type, since it would then tie with operator[](size_t)
+		// instead of tying with operator[](const char*). Deducing the parameter via a template
+		// instead gives an exact-match candidate for whatever integral type is actually passed,
+		// which beats every "Conversion"-rank candidate outright.
+		template<std::integral Index>
+		T& operator[](Index index) {
 			return operator[](static_cast<std::size_t>(index));
 		}
-		const T& operator[](int index) const {
+		template<std::integral Index>
+		const T& operator[](Index index) const {
 			return operator[](static_cast<std::size_t>(index));
 		}
 
@@ -1226,15 +1234,22 @@ namespace oms {
 	    const Structure& operator[](std::size_t index) const {
 			return *members[index];
 		}
-		// A literal 0 is simultaneously a valid int-to-size_t conversion and a null-pointer
-		// constant, so `a[0]` is otherwise ambiguous between operator[](size_t) above and the
-		// inherited operator[](const char*) -- only on a const Array, where both candidates
-		// are equally const-qualified. These int overloads are exact matches for such literals
-		// and win overload resolution outright, resolving the ambiguity.
-		Structure& operator[](int index) {
+		// An integral index that isn't already exactly std::size_t (e.g. a literal 0, an int, an
+		// unsigned int) is otherwise ambiguous between operator[](size_t) above and the inherited
+		// operator[](const char*) -- only on a const Array, where both candidates are equally
+		// const-qualified and the conversion to either size_t or const char* (for a literal 0,
+		// which is also a null-pointer constant) ranks equally as a "Conversion". A single fixed
+		// overload (e.g. operator[](int)) would only fix that one type and reintroduce the same
+		// ambiguity for every other integral type, since it would then tie with operator[](size_t)
+		// instead of tying with operator[](const char*). Deducing the parameter via a template
+		// instead gives an exact-match candidate for whatever integral type is actually passed,
+		// which beats every "Conversion"-rank candidate outright.
+		template<std::integral Index>
+		Structure& operator[](Index index) {
 			return operator[](static_cast<std::size_t>(index));
 		}
-		const Structure& operator[](int index) const {
+		template<std::integral Index>
+		const Structure& operator[](Index index) const {
 			return operator[](static_cast<std::size_t>(index));
 		}
 
