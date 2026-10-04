@@ -33,7 +33,7 @@ std::cout << oms::toString(s) << '\n';
 ## Requirements
 
 - C++20 or later
-- Header-only: copy `Oms.hpp` (and optionally `OmsString.hpp`) into your project
+- Header-only: copy `Oms.hpp` (and optionally `OmsString.hpp` and `OmsText.hpp`) into your project
 - Optionally depends on [Ensure.hpp](https://github.com/lrmoorejr/ensure) for `ensure()` /
   `throw_if()` / `caution()`. Falls back to `assert()` and built-in equivalents when
   Ensure.hpp is not present.
@@ -44,7 +44,8 @@ std::cout << oms::toString(s) << '\n';
 |------|---------|
 | `Oms.hpp` | Core library: all types, serialization |
 | `OmsString.hpp` | Human-readable dump formatting (`toString()`) |
-| `OmsDump.cpp` | `omsdump` CLI — prints any `.oms` file to stdout |
+| `OmsText.hpp` | Lossless text form and its parser (`toText()` / `fromText()`, `writeText()` / `readText()`) |
+| `OmsDump.cpp` | `omsdump` CLI — prints any `.oms` file to stdout, and converts between binary and text |
 
 ## API
 
@@ -180,12 +181,116 @@ std::cout << oms::toString(section);
 Produces an indented, JSON-like string. Keys are sorted alphabetically. Nested structures
 and arrays are expanded recursively. Blobs appear as `(blob)`.
 
+### Text format (OmsText.hpp)
+
+`toString()` is for looking at. The text written by `OmsText.hpp` keeps everything, so it can
+be read back into the same data: the same members in the same order, each with the same type
+and the same value, bit for bit. It is also meant to be written by hand.
+
+```
+section "model" {
+   splitPoint: 240,
+   components: [
+      {
+         class: "Resynthesizer",
+         visible: true,
+         redAmplification: float4(39),
+         "real time": 1723312000.25,
+         point: int16[180, 94],
+         signal: blob(0000803f 0000003f)
+      }
+   ]
+}
+```
+
+| OMS type | Text | Notes |
+|----------|------|-------|
+| `structure` | `{ key: value, ... }` | Members keep their order |
+| `array` | `[ { ... }, { ... } ]` | A bare `[` always holds structures |
+| `string` | `"text"` | Escapes: `\"` `\\` `\n` `\r` `\t` `\xHH` |
+| `boolean` | `true`, `false` | |
+| `int32` | `42`, `-7` | What a bare integer means |
+| `float8` | `0.5`, `2e-3`, `nan`, `inf`, `-inf` | What a bare number with a `.` or an exponent means |
+| other scalars | `uint8(200)`, `int64(-5)`, `float4(0.5)` | The type name, then the value |
+| vectors | `int16[180, 94]`, `float4[]` | The element type name, then the elements |
+| `blob` | `blob(0000803f 0000003f)` | Hexadecimal, two digits per byte |
+
+- The type names are `uint8` to `uint64`, `int8` to `int64`, `float4` and `float8`. Any scalar
+  may be given its type, as in `int32(5)`. A number that does not fit its type, such as
+  `uint8(300)`, is an error.
+- A float is written in the shortest form that reads back to the same bits. The one thing
+  text does not carry is the payload of a NaN, which is written as `nan` or `-nan`.
+- A key is written bare when it is made of letters, digits, `_` and `.` and does not start
+  with a digit or a `.`. Any other key is a quoted string. A repeated key is an error.
+- Members and elements are separated by commas, and a trailing comma is allowed. Line breaks
+  and indentation carry no meaning. `//` starts a comment that runs to the end of the line.
+
+```cpp
+#include "OmsText.hpp"
+
+// One Structure <-> "{ ... }"
+std::string text = oms::toText(structure);
+oms::Structure settings = oms::fromText("{ gain: 0.5, taps: 3 }");
+float gain = settings.getOr("gain", 1.0f);   // a bare 0.5 is a float8, and converts as usual
+
+// One Section <-> "section "name" { ... }", one after another for a whole file
+oms::writeText(textOut, section);            // unlike operator<<, leaves the section as it was
+oms::TextPosition position;
+while(oms::readText(textIn, section, position))
+    binaryOut << section;
+```
+
+| Function | Description |
+|----------|-------------|
+| `toText(structure, options)` | Returns the text of a `Structure` |
+| `fromText(text)` | Returns the `Structure` that a text of the form `{ ... }` describes |
+| `writeText(ostream, section, options)` | Writes one `Section` as `section "name" { ... }` |
+| `readText(istream, section, position)` | Reads the next `Section`; returns `false` when none is left |
+
+Text that cannot be read throws `oms::ParseError`, a `std::runtime_error` with `line` and
+`column` members whose `what()` reads `line:column: message`. Passing the same `TextPosition`
+to every `readText()` call on a stream keeps those counted from the start of the stream.
+
+`options` is an `oms::TextOptions`, and by default everything is written. Setting
+`maxVectorElements`, `maxBlobBytes` or `maxArrayElements` gives a summary, in which a larger
+vector, blob or array is replaced by its size and a hash of its contents:
+
+```
+samples: float4[4096 elided 9f3c2a1b],
+image: blob(131072 bytes elided 5d02e7a4),
+records: [2008331 elided 418b0da2]
+```
+
+The hash changes when the contents do, so a comparison of two summaries shows that the data
+differs without showing the data. An array's hash covers everything the array holds, whatever
+the other limits are. A summary cannot be read back.
+
 ### omsdump utility
 
 ```sh
-omsdump data.oms                # dump all sections
-omsdump data.oms config         # dump only the section named "config"
-omsdump --list data.oms         # list section names and byte counts
+omsdump data.oms                        # dump all sections
+omsdump data.oms config                 # dump only the section named "config"
+omsdump --list data.oms                 # list section names and byte counts
+omsdump --text data.oms                 # lossless text, all sections
+omsdump --text data.oms config          # lossless text, one section
+omsdump --text --summary data.oms       # text with the bulk elided (see below)
+omsdump --text --summary=256 data.oms   # the same, with a higher limit
+omsdump --binary data.txt data.oms      # text back to binary; a text file of - reads stdin
+```
+
+`--summary=N` elides vectors of more than N elements, blobs of more than 4N bytes, and arrays of
+more than 16N structures. N is 16 unless given, so an array is kept up to 256 structures.
+
+`--text` followed by `--binary` reproduces a file byte for byte, provided its sections record
+their size (see `sectionSize()`). A section that was written to a non-seekable stream records
+none, and gains one. On text that cannot be read, `--binary` prints `file:line:column: message`,
+writes no output file, and exits non-zero.
+
+To have git show changes to binary OMS files as text:
+
+```sh
+echo '*.oms diff=oms' >> .gitattributes
+git config diff.oms.textconv 'omsdump --text --summary'
 ```
 
 ## Wire format

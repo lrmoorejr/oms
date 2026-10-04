@@ -30,10 +30,10 @@ endif()
 
 find_package(Catch2 3 REQUIRED)
 
-add_executable(Oms-test Oms-test.cpp Oms.hpp OmsString.hpp)
+add_executable(Oms-test Oms-test.cpp OmsText-test.cpp Oms.hpp OmsString.hpp OmsText.hpp)
 target_link_libraries(Oms-test PRIVATE Catch2::Catch2WithMain)
 
-add_executable(omsdump OmsDump.cpp Oms.hpp OmsString.hpp)
+add_executable(omsdump OmsDump.cpp Oms.hpp OmsString.hpp OmsText.hpp)
 
 enable_testing()
 include(Catch)

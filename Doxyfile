@@ -5,7 +5,7 @@ PROJECT_NAME           = "OMS"
 PROJECT_BRIEF           = "One More Serializer -- a single-header C++20 binary serialization library"
 
 OUTPUT_DIRECTORY       = docs
-INPUT                  = Oms.hpp OmsString.hpp README.md
+INPUT                  = Oms.hpp OmsString.hpp OmsText.hpp README.md
 USE_MDFILE_AS_MAINPAGE = README.md
 
 RECURSIVE              = NO
