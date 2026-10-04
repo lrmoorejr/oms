@@ -1477,14 +1477,16 @@ namespace oms {
 					"Oms: invalid section header");
 
 				const size_t totalSize = readBinary<size_t>(istream);  // address1
-				readBinary<size_t>(istream);                            // address2 (reserved)
-				readBinary<size_t>(istream);                            // address3 (reserved)
+				const size_t reserved2 = readBinary<size_t>(istream);  // address2 (reserved)
+				const size_t reserved3 = readBinary<size_t>(istream);  // address3 (reserved)
 				std::string sectionName = readIdentifier(istream);
 
 				if(sectionName == targetName) {
 					Section result;
 					result.name = std::move(sectionName);
 					result.address1 = totalSize;
+					result.address2 = reserved2;
+					result.address3 = reserved3;
 					result.Structure::read(istream);
 					return result;
 				}
